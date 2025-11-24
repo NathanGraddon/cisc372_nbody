@@ -10,7 +10,7 @@ nbody.o: nbody.c planets.h config.h vector.h compute.h $(ALWAYS_REBUILD)
 	$(CC) $(FLAGS) -c $<
 
 compute.o: compute.c config.h vector.h compute.h $(ALWAYS_REBUILD)
-	$(CC) $(FLAGS) -c $<
+	$(CC) -x cu $(FLAGS) -c $<
 
 clean:
 	rm -f *.o nbody
