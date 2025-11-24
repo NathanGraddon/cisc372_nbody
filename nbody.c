@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <cuda_runtime.h>
 #include <stdio.h>
 #include <time.h>
 #include <math.h>
@@ -98,17 +99,30 @@ int main(int argc, char **argv)
 	initHostMemory(NUMENTITIES);
 	planetFill();
 	randomFill(NUMPLANETS + 1, NUMASTEROIDS);
+	cudaMalloc((void**)&d_hPos, sizeof(vector3)*NUMENTITIES);
+	cudaMalloc((void**)&d_hVel, sizeof(vector3)*NUMENTITIES);
+	cudaMalloc((void**)&d_mass, sizeof(double) * NUMENTITIES);
+	cudaMemcpy(d_hPos, hPos, sizeof(vector3)*NUMENTITIES, cudaMemcpyHostToDevice);
+	cudaMemcpy(d_hVel, hVel, sizeof(vector3)*NUMENTITIES, cudaMemcpyHostToDevice);
+	cudaMemcpy(d_mass, mass, sizeof(double)*NUMENTITIES, cudaMemcpyHostToDevice);
 	//now we have a system.
 	#ifdef DEBUG
-	printSystem(stdout);
+		printSystem(stdout);
 	#endif
 	for (t_now=0;t_now<DURATION;t_now+=INTERVAL){
+		//hopfully this will now launch CUDA kernels, using d_* arrays
 		compute();
 	}
 	clock_t t1=clock()-t0;
 #ifdef DEBUG
+	cudaMemcpy(hPos, d_hPos, sizeof(vector3)*NUMENTITIES, cudaMemcpyDeviceToHost);
+	cudaMemcpy(hVel, d_hVel, sizeof(vector3)*NUMENTITIES, cudaMemcpyDeviceToHost);
 	printSystem(stdout);
 #endif
+	cudaFree(d_hPos);
+	cudaFree(d_hVel);
+	cudaFree(d_mass);
+	
 	printf("This took a total time of %f seconds\n",(double)t1/CLOCKS_PER_SEC);
 
 	freeHostMemory();
