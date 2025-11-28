@@ -1,5 +1,5 @@
 CC = nvcc
-FLAGS = -DDEBUG -Xcompiler -fopenmp
+FLAGS = -Xcompiler -fopenmp
 LIBS = -lm
 ALWAYS_REBUILD=makefile
 
